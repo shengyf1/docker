@@ -4,6 +4,22 @@ LABEL maintainer="Odoo S.A. <info@odoo.com>"
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
 
+# 换成阿里源
+# 更新apt-get源
+RUN echo \
+    deb http://mirrors.aliyun.com/debian/ stretch main non-free contrib\
+    deb-src http://mirrors.aliyun.com/debian/ stretch main non-free contrib\
+    deb http://mirrors.aliyun.com/debian-security stretch/updates main\
+    deb-src http://mirrors.aliyun.com/debian-security stretch/updates main\
+    deb http://mirrors.aliyun.com/debian/ stretch-updates main non-free contrib\
+    deb-src http://mirrors.aliyun.com/debian/ stretch-updates main non-free contrib\
+    deb http://mirrors.aliyun.com/debian/ stretch-backports main non-free contrib\
+    deb-src http://mirrors.aliyun.com/debian/ stretch-backports main non-free contrib\
+    > /etc/apt/sources.list
+
+# RUN  sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list
+RUN  apt-get clean
+
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
 RUN set -x; \
         apt-get update \
@@ -60,8 +76,11 @@ RUN set -x;\
 ENV ODOO_VERSION 12.0
 ARG ODOO_RELEASE=20190816
 ARG ODOO_SHA=e95cdfe23d16a8572b63bc8d8e8616be5bc18a0a
+
+COPY ./odoo_12.0.20190816_all.deb odoo.deb
 RUN set -x; \
-        curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
+        echo "开始下载并安装odoo..." \
+#        curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
         && echo "${ODOO_SHA} odoo.deb" | sha1sum -c - \
         && dpkg --force-depends -i odoo.deb \
         && apt-get update \
@@ -76,8 +95,10 @@ RUN chown odoo /etc/odoo/odoo.conf
 
 # Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
 RUN mkdir -p /mnt/extra-addons \
-        && chown -R odoo /mnt/extra-addons
-VOLUME ["/var/lib/odoo", "/mnt/extra-addons"]
+        && chown -R odoo /mnt/extra-addons \
+        && mkdir -p /mnt/saas-addons \
+        && chown -R odoo /mnt/saas-addons
+VOLUME ["/var/lib/odoo", "/mnt/extra-addons", "/mnt/saas-addons"]
 
 # Expose Odoo services
 EXPOSE 8069 8071

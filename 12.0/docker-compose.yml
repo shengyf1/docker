@@ -1,0 +1,28 @@
+version: '2'
+services:
+  web:
+    image: wdmsyf/odoo:saas-12.190825
+    container_name: odoo12_saas
+    depends_on:
+      - db
+    ports:
+      - "8072:8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./config:/etc/odoo
+      - ./addons:/mnt/extra-addons
+      - ./saas-addons:/mnt/saas-addons
+  db:
+    image: postgres:10
+    container_name: odoo12_saas_db
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+volumes:
+  odoo-web-data:
+  odoo-db-data:
+
