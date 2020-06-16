@@ -1,0 +1,30 @@
+version: '2'
+services:
+  web:
+    image: wdmsyf/odoo_ce:14.0alpah1
+    container_name: odoo14
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8469:8069"
+    volumes:
+      - odoo14-web-data:/var/lib/odoo
+      - ./config:/etc/odoo
+      - ./addons:/mnt/extra-addons
+
+  db:
+    image: postgres:11
+    container_name: odoo14_db
+    restart: always
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo14-db-data:/var/lib/postgresql/data/pgdata
+
+volumes:
+  odoo14-web-data:
+  odoo14-db-data:
